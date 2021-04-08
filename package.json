@@ -1,6 +1,6 @@
 {
   "name": "cloudwatch-logs-search",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This is sample logic that filters and retrieves logs from Amazon CloudWatch.",
   "main": "index.js",
   "scripts": {
