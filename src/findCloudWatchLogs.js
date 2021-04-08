@@ -43,8 +43,8 @@ module.exports = async (options = {}) => {
     }));
 
     // Get the start and end times of the previous day.
-    console.log(`Start: ${moment(options.startTime).format('YYYY-MM-DD HH:mm:ss')}`);
-    console.log(`End: ${moment(options.endTime).format('YYYY-MM-DD HH:mm:ss')}`);
+    // console.log(`Start: ${moment(options.startTime).format('YYYY-MM-DD HH:mm:ss')}`);
+    // console.log(`End: ${moment(options.endTime).format('YYYY-MM-DD HH:mm:ss')}`);
 
     // Find the Nginx access log from a day ago.
     streams = streams.filter(stream =>
@@ -54,14 +54,14 @@ module.exports = async (options = {}) => {
     // End if there is no log of the previous day.
     if (!streams.length) return void console.log('There is no access log of the previous day.');
 
-    // Debug found log stream.
-    for (let {logStreamName, firstEventTimestamp, lastEventTimestamp} of streams) {
-      console.log('==================================================');
-      console.log(`logStreamName: ${logStreamName}`);
-      console.log(`firstEventTimestamp: ${moment(firstEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
-      console.log(`lastEventTimestamp: ${moment(lastEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
-      console.log('==================================================');
-    }
+    // // Debug found log stream.
+    // for (let {logStreamName, firstEventTimestamp, lastEventTimestamp} of streams) {
+    //   console.log('==================================================');
+    //   console.log(`logStreamName: ${logStreamName}`);
+    //   console.log(`firstEventTimestamp: ${moment(firstEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
+    //   console.log(`lastEventTimestamp: ${moment(lastEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
+    //   console.log('==================================================');
+    // }
 
     // Filter logs by keyword.
     let events = await (new Promise((resolve, reject) => {
@@ -80,12 +80,12 @@ module.exports = async (options = {}) => {
       });
     }));
 
-    // Debug found events.
-    for (let {timestamp, message} of events)
-      console.log(`${moment(timestamp).format('YYYY-MM-DD HH:mm:ss')} -> message: ${message}`);
+    // // Debug found events.
+    // for (let {timestamp, message} of events)
+    //   console.log(`${moment(timestamp).format('YYYY-MM-DD HH:mm:ss')} -> message: ${message}`);
 
     // Return event log.
-    return events.map(event => events.message);
+    return events.map(event => event.message);
   } catch (e) {
     console.error(e);
   }

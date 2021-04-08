@@ -11,4 +11,5 @@ if (process.argv.length < 3)
     logGroupName: process.argv[2],
     keyword: process.argv[3] || undefined
   });
+  console.log(logs);
 })();
