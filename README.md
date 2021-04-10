@@ -35,24 +35,26 @@ AWS_CLOUD_WATCH_LOGS_SECRET_KEY=********
 
 Search logs.  
 
+The log group name is an exact match search and the log stream name is an fuzzy search.  
+
 ```sh
-node search.js 'Log group name';
+node search.js 'Log group name' 'Log stream name';
 ```
 
 ## Usage
 
 How to use search.js.  
 
-To get all logs from a log group.  
+Gets all logs from the stream that contains the specified log stream name..  
 
 ```sh
-node search.js 'Log group name';
+node search.js 'Log group name' 'Log stream name';
 ```
 
-To get logs that match a specific keyword from a log group.  
+Gets the log that matches the keyword from the stream that contains the specified log stream name..  
 
 ```sh
-node search.js 'Log group name' 'keyword';
+node search.js 'Log group name' 'Log stream name' 'keyword';
 ```
 
 ## License

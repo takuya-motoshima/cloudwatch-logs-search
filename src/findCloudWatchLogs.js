@@ -14,9 +14,11 @@ module.exports = async (options = {}) => {
     // Initialize options.
     options = Object.assign({
       logGroupName: undefined,
+      logStreamName: undefined,
       keyword: undefined,
       startTime: moment().add(-1, 'days').startOf('day').valueOf(),
-      endTime: moment().add(-1, 'days').endOf('day').valueOf()
+      endTime: moment().add(-1, 'days').endOf('day').valueOf(),
+      debug: false
     }, options);
 
     // assign AWS credentials here in following way.
@@ -43,32 +45,39 @@ module.exports = async (options = {}) => {
     }));
 
     // Get the start and end times of the previous day.
-    // console.log(`Start: ${moment(options.startTime).format('YYYY-MM-DD HH:mm:ss')}`);
-    // console.log(`End: ${moment(options.endTime).format('YYYY-MM-DD HH:mm:ss')}`);
+    console.log(`Start: ${moment(options.startTime).format('YYYY-MM-DD HH:mm:ss')}`);
+    console.log(`End: ${moment(options.endTime).format('YYYY-MM-DD HH:mm:ss')}`);
 
     // Find the Nginx access log from a day ago.
-    streams = streams.filter(stream =>
-      stream.logStreamName.indexOf('app.access.log') !== -1
-      && !(stream.firstEventTimestamp < options.startTime && stream.lastEventTimestamp < options.startTime));
+    streams = streams.filter(stream => {
+      // Filter by log stream name.
+      if (options.logStreamName && stream.logStreamName.indexOf(options.logStreamName) === -1)
+        return false;
+
+      // Filtering by period.
+      return !(stream.firstEventTimestamp < options.startTime && stream.lastEventTimestamp < options.startTime);
+    });
 
     // End if there is no log of the previous day.
     if (!streams.length) return void console.log('There is no access log of the previous day.');
 
-    // // Debug found log stream.
-    // for (let {logStreamName, firstEventTimestamp, lastEventTimestamp} of streams) {
-    //   console.log('==================================================');
-    //   console.log(`logStreamName: ${logStreamName}`);
-    //   console.log(`firstEventTimestamp: ${moment(firstEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
-    //   console.log(`lastEventTimestamp: ${moment(lastEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
-    //   console.log('==================================================');
-    // }
+    // Debug found log stream.
+    if (options.debug) {
+      for (let {logStreamName, firstEventTimestamp, lastEventTimestamp} of streams) {
+        console.log('==================================================');
+        console.log(`logStreamName: ${logStreamName}`);
+        console.log(`firstEventTimestamp: ${moment(firstEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
+        console.log(`lastEventTimestamp: ${moment(lastEventTimestamp).format('YYYY-MM-DD HH:mm:ss')}`);
+        console.log('==================================================');
+      }
+    }
 
     // Filter logs by keyword.
     let events = await (new Promise((resolve, reject) => {
       cloudwatchlogs.filterLogEvents({
        logGroupName: options.logGroupName,
        logStreamNames: streams.map(stream => stream.logStreamName),
-       filterPattern: `"${options.keyword}"`,
+       filterPattern: options.keyword ? `"${options.keyword}"` : undefined,
        limit: 10000,
        startTime: options.startTime,
        endTime: options.endTime
