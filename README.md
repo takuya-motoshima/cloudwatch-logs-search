@@ -7,6 +7,10 @@ This is sample logic that filters and retrieves logs from Amazon CloudWatch.
 - https://docs.aws.amazon.com/ja_jp/awscloudtrail/latest/userguide/awscloudtrail-ug.pdf
 - https://business.ntt-east.co.jp/content/cloudsolution/column-try-28.html#section-04
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md).
+
 ## Getting Started
 
 Install package.  
