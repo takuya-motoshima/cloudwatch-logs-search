@@ -13,16 +13,14 @@ module.exports = class {
     const result = require('dotenv').config({path: '.env'})
     if (result.error) throw result.error;
 
-    // Set credentials.
+    // CloudWatch Logs instance.
     const credentials = result.parsed;
-    AWS.config.update({
+    this.client = new AWS.CloudWatchLogs({
+      apiVersion: '2014-03-28',
       accessKeyId: credentials.AWS_CLOUD_WATCH_LOGS_ACCESS_KEY,
       secretAccessKey: credentials.AWS_CLOUD_WATCH_LOGS_SECRET_KEY,
       region: credentials.AWS_CLOUD_WATCH_LOGS_REGION
     });
-
-    // CloudWatch Logs instance.
-    this.cloudwatchlogs = new AWS.CloudWatchLogs({apiVersion: '2014-03-28'});
   }
 
   /**
@@ -53,14 +51,6 @@ module.exports = class {
 
       // Get LogStreams.
       let streams = await this.findLogStreams(options.logGroupName);
-      // let streams = await (new Promise((resolve, reject) => {
-      //   this.cloudwatchlogs.describeLogStreams({logGroupName: options.logGroupName}, (err, data) => {
-      //     // an error occurred
-      //     if (err) return void reject(err);
-      //     // successful response
-      //     resolve(data.logStreams);
-      //   });
-      // }));
 
       // Find the Nginx access log from a day ago.
       streams = streams.filter(stream => {
@@ -91,7 +81,7 @@ module.exports = class {
 
       // Filter logs by keyword.
       const events = await (new Promise((resolve, reject) => {
-        this.cloudwatchlogs.filterLogEvents({
+        this.client.filterLogEvents({
           logGroupName: options.logGroupName,
           logStreamNames: streams.map(stream => stream.logStreamName),
           filterPattern: options.keyword ? `"${options.keyword}"` : undefined,
@@ -129,7 +119,7 @@ module.exports = class {
     return new Promise((resolve, reject) => {
       let streams = [];
       const recursive = (nextToken = undefined) => {
-        this.cloudwatchlogs.describeLogStreams({logGroupName, nextToken}).promise()
+        this.client.describeLogStreams({logGroupName, nextToken}).promise()
           // successful response
           .then(data => {
             streams.push(...data.logStreams);
