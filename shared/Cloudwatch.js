@@ -1,10 +1,10 @@
 const AWS = require('aws-sdk');
-const moment = require('../src/moment');
+const moment = require('./moment');
 
 /**
  * Cloudwatch class.
  */
-module.exports = class {
+module.exports = new class {
   /**
    * Generate cloudWatch Logs instance.
    */
@@ -28,8 +28,8 @@ module.exports = class {
    * 
    * @param  {string} options.logGroupName: Log group name you want to find.
    * @param  {string} options.keyword: Keywords for filtering logs.
-   * @param  {number} options.startTime: Search period start date. UnixTime milliseconds.The default is yesterday's 00:00:00.
-   * @param  {number} options.endTime: Search period end date. UnixTime milliseconds.The default is yesterday at 23:59:59.
+   * @param  {number} options.since: Search period start date. UnixTime milliseconds.The default is yesterday's 00:00:00.
+   * @param  {number} options.until: Search period end date. UnixTime milliseconds.The default is yesterday at 23:59:59.
    */
   async find(options) {
     try {
@@ -38,15 +38,15 @@ module.exports = class {
         logGroupName: undefined,
         logStreamName: undefined,
         keyword: undefined,
-        startTime: moment().add(-1, 'days').startOf('day').valueOf(),
-        endTime: moment().add(-1, 'days').endOf('day').valueOf(),
+        since: moment().add(-1, 'days').startOf('day').valueOf(),
+        until: moment().add(-1, 'days').endOf('day').valueOf(),
         debug: false
       }, options);
 
       // Debug start and end dates.
       if (options.debug) {
-        console.log(`Start: ${moment(options.startTime).format('YYYY-MM-DD HH:mm:ss')}`);
-        console.log(`End: ${moment(options.endTime).format('YYYY-MM-DD HH:mm:ss')}`);
+        console.log(`Start: ${moment(options.since).format('YYYY-MM-DD HH:mm:ss')}`);
+        console.log(`End: ${moment(options.until).format('YYYY-MM-DD HH:mm:ss')}`);
       }
 
       // Get LogStreams.
@@ -59,10 +59,7 @@ module.exports = class {
           return false;
 
         // Filtering by period.
-        return !(stream.firstEventTimestamp < options.startTime && stream.lastEventTimestamp < options.startTime);
-        // const jstFirstEventTimestamp = moment(stream.firstEventTimestamp).tz('Asia/Tokyo').valueOf();
-        // const jstLastEventTimestamp = moment(stream.lastEventTimestamp).tz('Asia/Tokyo').valueOf();
-        // return !(jstFirstEventTimestamp < options.startTime && jstLastEventTimestamp < options.startTime);
+        return !(stream.firstEventTimestamp < options.since && stream.lastEventTimestamp < options.since);
       });
 
       // End if there is no log of the previous day.
@@ -87,11 +84,8 @@ module.exports = class {
           filterPattern: options.keyword ? `"${options.keyword}"` : undefined,
           interleaved: true,
           limit: 10000,
-          // Since the log time is UTC, convert the target date to JST.
-          // startTime: moment(options.startTime).add(9, 'hours').valueOf(),
-          // endTime: moment(options.endTime).add(9, 'hours').valueOf()
-          startTime: options.startTime,
-          endTime: options.endTime
+          startTime: options.since,
+          endTime: options.until
         }, (err, data) => {
           // an error occurred
           if (err) return void reject(err);

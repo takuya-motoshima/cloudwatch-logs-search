@@ -1,4 +1,4 @@
-const Cloudwatch = require('./src/Cloudwatch');
+const Cloudwatch = require('./shared/Cloudwatch');
 
 // Main processing.
 // Get log groups and keywords from arguments.
@@ -7,11 +7,8 @@ if (process.argv.length < 4)
 
 // Search log.
 (async () => {
-  // Cloudwatch instance.
-  const cloudwatch = new Cloudwatch();
-
   // Find logs from cloudwatch.
-  const logs = await cloudwatch.find({
+  const logs = await Cloudwatch.find({
     logGroupName: process.argv[2],
     logStreamName: process.argv[3],
     keyword: process.argv[4] || undefined,
